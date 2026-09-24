@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!DOCTYPE suite SYSTEM "https://testng.org/testng-1.0.dtd">
+
+<suite name="Bank Automation Suite">
+
+    <test name="Configuration Tests">
+        <packages>
+            <package name="org.bankautomation.config"/>
+        </packages>
+    </test>
+
+    <test name="UI Tests">
+        <packages>
+            <package name="org.bankautomation.ui"/>
+        </packages>
+    </test>
+
+    <test name="API Tests">
+        <packages>
+            <package name="org.bankautomation.api"/>
+        </packages>
+    </test>
+
+    <test name="Database Tests">
+        <packages>
+            <package name="org.bankautomation.database"/>
+        </packages>
+    </test>
+
+    <test name="E2E Tests">
+        <packages>
+            <package name="org.bankautomation.e2e"/>
+        </packages>
+    </test>
+
+</suite>
