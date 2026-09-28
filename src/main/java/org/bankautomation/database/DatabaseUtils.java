@@ -1,5 +1,7 @@
-package org.bankautomation.database;
 
+        package org.bankautomation.database;
+
+import java.math.BigDecimal;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -14,9 +16,12 @@ public class DatabaseUtils {
 
         String sql = "SELECT COUNT(*) FROM users";
 
-        try (Connection connection = DatabaseConnection.getConnection();
-             PreparedStatement statement = connection.prepareStatement(sql);
-             ResultSet resultSet = statement.executeQuery()) {
+        try (Connection connection =
+                     DatabaseConnection.getConnection();
+             PreparedStatement statement =
+                     connection.prepareStatement(sql);
+             ResultSet resultSet =
+                     statement.executeQuery()) {
 
             if (resultSet.next()) {
                 return resultSet.getInt(1);
@@ -37,9 +42,12 @@ public class DatabaseUtils {
 
         String sql = "SELECT COUNT(*) FROM accounts";
 
-        try (Connection connection = DatabaseConnection.getConnection();
-             PreparedStatement statement = connection.prepareStatement(sql);
-             ResultSet resultSet = statement.executeQuery()) {
+        try (Connection connection =
+                     DatabaseConnection.getConnection();
+             PreparedStatement statement =
+                     connection.prepareStatement(sql);
+             ResultSet resultSet =
+                     statement.executeQuery()) {
 
             if (resultSet.next()) {
                 return resultSet.getInt(1);
@@ -56,17 +64,23 @@ public class DatabaseUtils {
         }
     }
 
-    public static boolean accountExists(String accountNumber) {
+    public static boolean accountExists(
+            String accountNumber) {
 
         String sql =
-                "SELECT COUNT(*) FROM accounts WHERE account_number = ?";
+                "SELECT COUNT(*) " +
+                        "FROM accounts " +
+                        "WHERE account_number = ?";
 
-        try (Connection connection = DatabaseConnection.getConnection();
-             PreparedStatement statement = connection.prepareStatement(sql)) {
+        try (Connection connection =
+                     DatabaseConnection.getConnection();
+             PreparedStatement statement =
+                     connection.prepareStatement(sql)) {
 
             statement.setString(1, accountNumber);
 
-            try (ResultSet resultSet = statement.executeQuery()) {
+            try (ResultSet resultSet =
+                         statement.executeQuery()) {
 
                 if (resultSet.next()) {
                     return resultSet.getInt(1) > 0;
@@ -84,7 +98,7 @@ public class DatabaseUtils {
         }
     }
 
-    public static java.math.BigDecimal getAccountBalance(
+    public static BigDecimal getAccountBalance(
             String accountNumber) {
 
         String sql =
@@ -92,7 +106,8 @@ public class DatabaseUtils {
                         "FROM accounts " +
                         "WHERE account_number = ?";
 
-        try (Connection connection = DatabaseConnection.getConnection();
+        try (Connection connection =
+                     DatabaseConnection.getConnection();
              PreparedStatement statement =
                      connection.prepareStatement(sql)) {
 
@@ -102,6 +117,7 @@ public class DatabaseUtils {
                          statement.executeQuery()) {
 
                 if (resultSet.next()) {
+
                     return resultSet.getBigDecimal(
                             "balance"
                     );
@@ -118,8 +134,6 @@ public class DatabaseUtils {
                     e
             );
         }
-
-
     }
 
     public static int getBeneficiaryCount() {
@@ -139,6 +153,41 @@ public class DatabaseUtils {
             }
 
             return 0;
+
+        } catch (SQLException e) {
+
+            throw new RuntimeException(
+                    "Failed to retrieve beneficiary count: "
+                            + e.getMessage(),
+                    e
+            );
+        }
+    }
+
+    public static int getBeneficiaryCount(
+            Long accountId) {
+
+        String sql =
+                "SELECT COUNT(*) " +
+                        "FROM beneficiaries " +
+                        "WHERE account_id = ?";
+
+        try (Connection connection =
+                     DatabaseConnection.getConnection();
+             PreparedStatement statement =
+                     connection.prepareStatement(sql)) {
+
+            statement.setLong(1, accountId);
+
+            try (ResultSet resultSet =
+                         statement.executeQuery()) {
+
+                if (resultSet.next()) {
+                    return resultSet.getInt(1);
+                }
+
+                return 0;
+            }
 
         } catch (SQLException e) {
 
@@ -246,7 +295,6 @@ public class DatabaseUtils {
                     e
             );
         }
-
     }
 
     public static Long getLatestTransactionId() {
@@ -279,6 +327,4 @@ public class DatabaseUtils {
             );
         }
     }
-
-
 }

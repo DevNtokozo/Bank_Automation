@@ -38,6 +38,12 @@ public class TransferPage {
     private final By transferError =
             By.cssSelector("[data-testid='transfer-error']");
 
+    private final By validationMessage =
+            By.xpath(
+                    "//*[contains(normalize-space(),"
+                            + "'Cannot transfer money to the same account')]"
+            );
+
     public TransferPage(WebDriver driver) {
 
         this.driver = driver;
@@ -156,11 +162,33 @@ public class TransferPage {
 
     public boolean isTransferErrorDisplayed() {
 
-        return wait.until(
-                ExpectedConditions.visibilityOfElementLocated(
-                        transferError
-                )
-        ).isDisplayed();
+        try {
+
+            wait.until(
+                    ExpectedConditions.visibilityOfElementLocated(
+                            transferError
+                    )
+            );
+
+            return true;
+
+        } catch (Exception e) {
+
+            try {
+
+                wait.until(
+                        ExpectedConditions.visibilityOfElementLocated(
+                                validationMessage
+                        )
+                );
+
+                return true;
+
+            } catch (Exception secondException) {
+
+                return false;
+            }
+        }
     }
 
     public String getSuccessMessage() {
@@ -174,12 +202,21 @@ public class TransferPage {
 
     public String getErrorMessage() {
 
-        return wait.until(
-                ExpectedConditions.visibilityOfElementLocated(
-                        transferError
-                )
-        ).getText();
+        try {
+
+            return wait.until(
+                    ExpectedConditions.visibilityOfElementLocated(
+                            transferError
+                    )
+            ).getText();
+
+        } catch (Exception e) {
+
+            return wait.until(
+                    ExpectedConditions.visibilityOfElementLocated(
+                            validationMessage
+                    )
+            ).getText();
+        }
     }
-
-
 }
