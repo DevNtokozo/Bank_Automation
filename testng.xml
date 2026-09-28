@@ -4,6 +4,10 @@
 
 <suite name="Bank Automation Suite">
 
+    <listeners>
+        <listener class-name="org.bankautomation.utils.ExtentTestListener"/>
+    </listeners>
+
     <test name="Configuration Tests">
         <packages>
             <package name="org.bankautomation.config"/>
