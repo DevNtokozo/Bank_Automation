@@ -17,12 +17,25 @@ public class ScreenshotUtils {
 
     public static String captureScreenshot(String testName) {
 
-        WebDriver driver = DriverFactory.getDriver();
+        WebDriver driver;
+
+        try {
+            driver = DriverFactory.getDriver();
+        } catch (IllegalStateException e) {
+
+            System.out.println(
+                    "Screenshot not captured: WebDriver is not initialized for this test."
+            );
+
+            return null;
+        }
 
         if (driver == null) {
+
             System.out.println(
-                    "Screenshot not captured: WebDriver is null"
+                    "Screenshot not captured: WebDriver is null."
             );
+
             return null;
         }
 
@@ -65,7 +78,7 @@ public class ScreenshotUtils {
 
             return filePath;
 
-        } catch (IOException e) {
+        } catch (IOException | RuntimeException e) {
 
             System.out.println(
                     "Unable to capture screenshot: "

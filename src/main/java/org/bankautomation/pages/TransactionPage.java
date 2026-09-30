@@ -87,12 +87,15 @@ public class TransactionPage {
 
     public void selectAccount(String accountId) {
 
-        Select select = new Select(
-                wait.until(
-                        driver ->
-                                driver.findElement(accountSelect)
-                )
-        );
+        Select select =
+                new Select(
+                        wait.until(
+                                driver ->
+                                        driver.findElement(
+                                                accountSelect
+                                        )
+                        )
+                );
 
         select.selectByValue(accountId);
     }
@@ -109,9 +112,12 @@ public class TransactionPage {
                         return null;
                     }
 
-                    String text = elements.get(0).getText();
+                    String text =
+                            elements.get(0).getText();
 
-                    if (text == null || text.trim().isEmpty()) {
+                    if (text == null ||
+                            text.trim().isEmpty()) {
+
                         return null;
                     }
 
@@ -124,18 +130,23 @@ public class TransactionPage {
 
         wait.until(
                 driver ->
-                        !driver.findElements(transactionRows)
-                                .isEmpty()
+                        !driver.findElements(
+                                transactionRows
+                        ).isEmpty()
         );
 
-        return driver.findElements(transactionRows).size();
+        return driver.findElements(
+                transactionRows
+        ).size();
     }
 
     public List<WebElement> getTransactionRows() {
 
         return wait.until(
                 driver ->
-                        driver.findElements(transactionRows)
+                        driver.findElements(
+                                transactionRows
+                        )
         );
     }
 
@@ -143,7 +154,9 @@ public class TransactionPage {
 
         return wait.until(
                 driver ->
-                        driver.findElements(transactionIds)
+                        driver.findElements(
+                                transactionIds
+                        )
         );
     }
 
@@ -151,7 +164,9 @@ public class TransactionPage {
 
         return wait.until(
                 driver ->
-                        driver.findElements(transactionAmounts)
+                        driver.findElements(
+                                transactionAmounts
+                        )
         );
     }
 
@@ -159,7 +174,9 @@ public class TransactionPage {
 
         return wait.until(
                 driver ->
-                        driver.findElements(transactionStatuses)
+                        driver.findElements(
+                                transactionStatuses
+                        )
         );
     }
 
@@ -167,21 +184,24 @@ public class TransactionPage {
 
         return getTransactionIds()
                 .get(index)
-                .getText();
+                .getText()
+                .trim();
     }
 
     public String getTransactionAmount(int index) {
 
         return getTransactionAmounts()
                 .get(index)
-                .getText();
+                .getText()
+                .trim();
     }
 
     public String getTransactionStatus(int index) {
 
         return getTransactionStatuses()
                 .get(index)
-                .getText();
+                .getText()
+                .trim();
     }
 
     public String getTransactionType(int rowIndex) {
@@ -190,7 +210,8 @@ public class TransactionPage {
                 .get(rowIndex)
                 .findElements(By.tagName("td"))
                 .get(1)
-                .getText();
+                .getText()
+                .trim();
     }
 
     public String getFromAccount(int rowIndex) {
@@ -199,7 +220,8 @@ public class TransactionPage {
                 .get(rowIndex)
                 .findElements(By.tagName("td"))
                 .get(2)
-                .getText();
+                .getText()
+                .trim();
     }
 
     public String getToAccount(int rowIndex) {
@@ -208,7 +230,8 @@ public class TransactionPage {
                 .get(rowIndex)
                 .findElements(By.tagName("td"))
                 .get(3)
-                .getText();
+                .getText()
+                .trim();
     }
 
     public String getReference(int rowIndex) {
@@ -217,6 +240,54 @@ public class TransactionPage {
                 .get(rowIndex)
                 .findElements(By.tagName("td"))
                 .get(5)
-                .getText();
+                .getText()
+                .trim();
+    }
+
+    /**
+     * Finds a transaction using its reference.
+     *
+     * Returns the row index when found.
+     * Returns -1 when not found.
+     */
+    public int findTransactionByReference(
+            String reference) {
+
+        List<WebElement> rows =
+                getTransactionRows();
+
+        for (int i = 0; i < rows.size(); i++) {
+
+            List<WebElement> cells =
+                    rows.get(i).findElements(
+                            By.tagName("td")
+                    );
+
+            if (cells.size() > 5) {
+
+                String actualReference =
+                        cells.get(5)
+                                .getText()
+                                .trim();
+
+                if (actualReference.equals(reference)) {
+                    return i;
+                }
+            }
+        }
+
+        return -1;
+    }
+
+    /**
+     * Checks whether a transaction with the
+     * supplied reference exists.
+     */
+    public boolean isTransactionDisplayed(
+            String reference) {
+
+        return findTransactionByReference(
+                reference
+        ) >= 0;
     }
 }

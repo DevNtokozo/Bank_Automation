@@ -37,29 +37,20 @@ public class ExtentTestListener
     @Override
     public void onTestFailure(ITestResult result) {
 
-        System.out.println(
-                ">>> ExtentTestListener.onTestFailure() CALLED"
-        );
-
         ExtentTest test = extentTest.get();
+
+        if (test == null) {
+            return;
+        }
 
         test.fail(
                 result.getThrowable()
-        );
-
-        System.out.println(
-                ">>> Attempting screenshot capture..."
         );
 
         String screenshotPath =
                 ScreenshotUtils.captureScreenshot(
                         result.getMethod().getMethodName()
                 );
-
-        System.out.println(
-                ">>> Screenshot path: "
-                        + screenshotPath
-        );
 
         if (screenshotPath != null) {
 
@@ -69,16 +60,7 @@ public class ExtentTestListener
                         screenshotPath
                 );
 
-                System.out.println(
-                        ">>> Screenshot attached to ExtentReport"
-                );
-
             } catch (Exception e) {
-
-                System.out.println(
-                        ">>> Screenshot attachment failed: "
-                                + e.getMessage()
-                );
 
                 test.warning(
                         "Screenshot could not be attached: "

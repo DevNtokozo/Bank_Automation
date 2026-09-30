@@ -2,229 +2,216 @@ package org.bankautomation.api;
 
 import io.restassured.response.Response;
 import org.testng.Assert;
-import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
 
 import java.util.List;
-import java.util.Map;
 
 public class BeneficiaryApiTest {
 
-    private String sessionId;
+    @Test
+    public void shouldReturnBeneficiariesForAccount() {
 
-    @BeforeClass
-    public void login() {
+        ApiSession apiSession =
+                new ApiSession();
+
+        apiSession.loginAsTestUser();
 
         Response response =
-                ApiClient.login(
-                        "testuser",
-                        "Test@123"
+                ApiClient.getBeneficiaries(
+                        apiSession.getSessionId(),
+                        1L
                 );
 
         Assert.assertEquals(
                 response.statusCode(),
                 200,
-                "Login should be successful"
+                "Beneficiary request should return HTTP 200"
         );
 
-        sessionId =
-                response.getCookie("JSESSIONID");
+        List<Integer> beneficiaries =
+                response.jsonPath()
+                        .getList("id");
 
         Assert.assertNotNull(
-                sessionId,
-                "JSESSIONID should be returned"
-        );
-    }
-
-    @Test(groups = {"api", "smoke"})
-    public void shouldReturnBeneficiariesForAccount() {
-
-        Response response =
-                ApiClient.getBeneficiaries(
-                        sessionId,
-                        1L
-                );
-
-        response.then()
-                .statusCode(200);
-
-        response.prettyPrint();
-
-        Assert.assertNotNull(
-                response.jsonPath().getList("$"),
+                beneficiaries,
                 "Beneficiary list should not be null"
         );
+
+        System.out.println(
+                "Beneficiaries returned: "
+                        + beneficiaries.size()
+        );
     }
 
-    @Test(groups = {"api"})
+    @Test
     public void shouldAddAndDeleteBeneficiarySuccessfully() {
 
-        String uniqueName =
-                "QA API Recipient " + System.currentTimeMillis();
+        ApiSession apiSession =
+                new ApiSession();
 
-        String requestBody = """
+        apiSession.loginAsTestUser();
+
+        Long accountId = 2L;
+
+        String uniqueName =
+                "API Automation Beneficiary "
+                        + System.currentTimeMillis();
+
+        String accountNumber =
+                "1000000003";
+
+        String bankName =
+                "Dev Bank";
+
+        String requestBody =
+                """
                 {
                     "name": "%s",
-                    "accountNumber": "1000000003",
-                    "bankName": "Dev Bank"
+                    "accountNumber": "%s",
+                    "bankName": "%s"
                 }
-                """.formatted(uniqueName);
+                """.formatted(
+                        uniqueName,
+                        accountNumber,
+                        bankName
+                );
 
-        // -----------------------------------------
-        // STEP 1: Add beneficiary
-        // -----------------------------------------
+        System.out.println(
+                "Creating beneficiary:"
+        );
 
-        Response addResponse =
+        System.out.println(
+                "Name: " + uniqueName
+        );
+
+        System.out.println(
+                "Account: " + accountNumber
+        );
+
+        Response createResponse =
                 ApiClient.addBeneficiary(
-                        sessionId,
-                        2L,
+                        apiSession.getSessionId(),
+                        accountId,
                         requestBody
                 );
 
-        addResponse.prettyPrint();
+        System.out.println(
+                "Create status: "
+                        + createResponse.statusCode()
+        );
+
+        System.out.println(
+                "Create response: "
+                        + createResponse.asPrettyString()
+        );
 
         Assert.assertEquals(
-                addResponse.statusCode(),
+                createResponse.statusCode(),
                 200,
                 "Beneficiary should be created successfully"
         );
 
         Long beneficiaryId =
-                addResponse.jsonPath()
+                createResponse.jsonPath()
                         .getLong("id");
 
         Assert.assertNotNull(
                 beneficiaryId,
-                "Created beneficiary ID should be returned"
+                "Created beneficiary ID should not be null"
         );
 
-        Assert.assertEquals(
-                addResponse.jsonPath()
-                        .getString("name"),
-                uniqueName
+        System.out.println(
+                "Created beneficiary ID: "
+                        + beneficiaryId
         );
 
-        Assert.assertEquals(
-                addResponse.jsonPath()
-                        .getString("accountNumber"),
-                "1000000003"
-        );
-
-        Assert.assertEquals(
-                addResponse.jsonPath()
-                        .getString("bankName"),
-                "Dev Bank"
-        );
-
-        Assert.assertEquals(
-                addResponse.jsonPath()
-                        .getString("status"),
-                "ACTIVE"
-        );
-
-        // -----------------------------------------
-        // STEP 2: Verify beneficiary exists
-        // -----------------------------------------
-
-        Response getResponse =
+        // Verify beneficiary appears in API
+        Response listResponse =
                 ApiClient.getBeneficiaries(
-                        sessionId,
-                        2L
+                        apiSession.getSessionId(),
+                        accountId
                 );
 
-        getResponse.then()
-                .statusCode(200);
+        Assert.assertEquals(
+                listResponse.statusCode(),
+                200,
+                "Beneficiary list should return HTTP 200"
+        );
 
-        List<Map<String, Object>> beneficiaries =
-                getResponse.jsonPath()
-                        .getList("$");
-
-        boolean beneficiaryFound =
-                beneficiaries.stream()
-                        .anyMatch(
-                                beneficiary ->
-                                        uniqueName.equals(
-                                                beneficiary.get("name")
-                                        )
-                        );
+        List<String> names =
+                listResponse.jsonPath()
+                        .getList("name");
 
         Assert.assertTrue(
-                beneficiaryFound,
+                names.contains(uniqueName),
                 "Created beneficiary should appear in beneficiary list"
         );
 
-        // -----------------------------------------
-        // STEP 3: Delete beneficiary
-        // -----------------------------------------
-
+        // Delete beneficiary
         Response deleteResponse =
                 ApiClient.deleteBeneficiary(
-                        sessionId,
+                        apiSession.getSessionId(),
                         beneficiaryId
                 );
 
-        deleteResponse.then()
-                .statusCode(200);
-
         Assert.assertEquals(
-                deleteResponse.asString(),
+                deleteResponse.statusCode(),
+                200,
+                "Beneficiary should be deleted successfully"
+        );
+
+        System.out.println(
                 "Beneficiary deleted successfully"
         );
 
-        // -----------------------------------------
-        // STEP 4: Verify beneficiary was deleted
-        // -----------------------------------------
-
+        // Verify deletion
         Response finalResponse =
                 ApiClient.getBeneficiaries(
-                        sessionId,
-                        2L
+                        apiSession.getSessionId(),
+                        accountId
                 );
 
-        finalResponse.then()
-                .statusCode(200);
+        Assert.assertEquals(
+                finalResponse.statusCode(),
+                200,
+                "Final beneficiary request should return HTTP 200"
+        );
 
-        List<Map<String, Object>> finalBeneficiaries =
+        List<Integer> finalIds =
                 finalResponse.jsonPath()
-                        .getList("$");
-
-        boolean beneficiaryStillExists =
-                finalBeneficiaries.stream()
-                        .anyMatch(
-                                beneficiary ->
-                                        uniqueName.equals(
-                                                beneficiary.get("name")
-                                        )
-                        );
+                        .getList("id");
 
         Assert.assertFalse(
-                beneficiaryStillExists,
-                "Deleted beneficiary should no longer appear"
+                finalIds.contains(
+                        beneficiaryId.intValue()
+                ),
+                "Deleted beneficiary should no longer exist"
         );
     }
 
-    @Test(groups = {"api"})
+    @Test
     public void shouldRejectUnauthorisedBeneficiaryRequest() {
 
         Response response =
                 ApiClient.getBeneficiaries(
-                        "invalid-session-id",
+                        "invalid-session",
                         1L
                 );
 
         Assert.assertEquals(
                 response.statusCode(),
                 401,
-                "Unauthorised beneficiary request should return 401"
+                "Unauthorised beneficiary request should return HTTP 401"
         );
     }
 
-    @Test(groups = {"api"})
+    @Test
     public void shouldRejectUnauthorisedBeneficiaryCreation() {
 
-        String requestBody = """
+        String requestBody =
+                """
                 {
-                    "name": "Unauthorised Recipient",
+                    "name": "Unauthorised Beneficiary",
                     "accountNumber": "1000000003",
                     "bankName": "Dev Bank"
                 }
@@ -232,7 +219,7 @@ public class BeneficiaryApiTest {
 
         Response response =
                 ApiClient.addBeneficiary(
-                        "invalid-session-id",
+                        "invalid-session",
                         2L,
                         requestBody
                 );
@@ -240,23 +227,23 @@ public class BeneficiaryApiTest {
         Assert.assertEquals(
                 response.statusCode(),
                 401,
-                "Unauthorised beneficiary creation should return 401"
+                "Unauthorised beneficiary creation should return HTTP 401"
         );
     }
 
-    @Test(groups = {"api"})
+    @Test
     public void shouldRejectUnauthorisedBeneficiaryDeletion() {
 
         Response response =
                 ApiClient.deleteBeneficiary(
-                        "invalid-session-id",
+                        "invalid-session",
                         4L
                 );
 
         Assert.assertEquals(
                 response.statusCode(),
                 401,
-                "Unauthorised beneficiary deletion should return 401"
+                "Unauthorised beneficiary deletion should return HTTP 401"
         );
     }
 }

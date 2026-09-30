@@ -10,7 +10,8 @@ public class TransactionTest extends BaseTest {
     @Test
     public void shouldDisplayTransactionsPage() {
 
-        LoginPage loginPage = new LoginPage(driver);
+        LoginPage loginPage =
+                new LoginPage(driver);
 
         loginPage.loginAsTestUser();
 
@@ -32,7 +33,8 @@ public class TransactionTest extends BaseTest {
     @Test
     public void shouldDisplayTransactionHistory() {
 
-        LoginPage loginPage = new LoginPage(driver);
+        LoginPage loginPage =
+                new LoginPage(driver);
 
         loginPage.loginAsTestUser();
 
@@ -57,7 +59,8 @@ public class TransactionTest extends BaseTest {
     @Test
     public void shouldDisplayCompletedTransfer() {
 
-        LoginPage loginPage = new LoginPage(driver);
+        LoginPage loginPage =
+                new LoginPage(driver);
 
         loginPage.loginAsTestUser();
 
@@ -74,73 +77,115 @@ public class TransactionTest extends BaseTest {
                 "No transactions found"
         );
 
+        String expectedReference =
+                "Test Transfer";
+
+        int rowIndex =
+                transactionPage.findTransactionByReference(
+                        expectedReference
+                );
+
+        Assert.assertTrue(
+                rowIndex >= 0,
+                "Test Transfer transaction was not found"
+        );
+
         String transactionId =
-                transactionPage.getTransactionId(0);
+                transactionPage.getTransactionId(
+                        rowIndex
+                );
 
         String transactionType =
-                transactionPage.getTransactionType(0);
+                transactionPage.getTransactionType(
+                        rowIndex
+                );
 
         String fromAccount =
-                transactionPage.getFromAccount(0);
+                transactionPage.getFromAccount(
+                        rowIndex
+                );
 
         String toAccount =
-                transactionPage.getToAccount(0);
+                transactionPage.getToAccount(
+                        rowIndex
+                );
 
         String amount =
-                transactionPage.getTransactionAmount(0);
+                transactionPage.getTransactionAmount(
+                        rowIndex
+                );
 
         String status =
-                transactionPage.getTransactionStatus(0);
+                transactionPage.getTransactionStatus(
+                        rowIndex
+                );
 
         System.out.println(
-                "Transaction ID: " + transactionId
+                "Transaction ID: " +
+                        transactionId
         );
 
         System.out.println(
-                "Transaction Type: " + transactionType
+                "Transaction Type: " +
+                        transactionType
         );
 
         System.out.println(
-                "From Account: " + fromAccount
+                "From Account: " +
+                        fromAccount
         );
 
         System.out.println(
-                "To Account: " + toAccount
+                "To Account: " +
+                        toAccount
         );
 
         System.out.println(
-                "Amount: " + amount
+                "Amount: " +
+                        amount
         );
 
         System.out.println(
-                "Status: " + status
+                "Status: " +
+                        status
         );
 
         Assert.assertEquals(
                 transactionType,
-                "TRANSFER"
+                "TRANSFER",
+                "Transaction type should be TRANSFER"
         );
 
         Assert.assertEquals(
                 fromAccount,
-                "1000000001"
+                "1000000001",
+                "Transfer should come from account 1000000001"
         );
 
         Assert.assertEquals(
                 toAccount,
-                "1000000003"
+                "1000000003",
+                "Transfer should go to account 1000000003"
         );
 
         Assert.assertEquals(
                 status,
-                "COMPLETED"
+                "COMPLETED",
+                "Transfer should have COMPLETED status"
+        );
+
+        Assert.assertEquals(
+                transactionPage.getReference(rowIndex),
+                expectedReference,
+                "Transaction reference is incorrect"
         );
     }
 
     @Test
     public void shouldDisplayTransactionReference() {
 
-        LoginPage loginPage = new LoginPage(driver);
+        LoginPage loginPage =
+                new LoginPage(driver);
 
         loginPage.loginAsTestUser();
 
@@ -149,23 +194,40 @@ public class TransactionTest extends BaseTest {
 
         transactionPage.openTransactionsPage();
 
+        String expectedReference =
+                "Test Transfer";
+
+        int rowIndex =
+                transactionPage.findTransactionByReference(
+                        expectedReference
+                );
+
+        Assert.assertTrue(
+                rowIndex >= 0,
+                "Test Transfer transaction was not found"
+        );
+
         String reference =
-                transactionPage.getReference(0);
+                transactionPage.getReference(
+                        rowIndex
+                );
 
         System.out.println(
-                "Transaction reference: " + reference
+                "Transaction reference: " +
+                        reference
         );
 
         Assert.assertEquals(
                 reference,
-                "Test Transfer"
+                expectedReference
         );
     }
 
     @Test
     public void shouldDisplayAccountBalance() {
 
-        LoginPage loginPage = new LoginPage(driver);
+        LoginPage loginPage =
+                new LoginPage(driver);
 
         loginPage.loginAsTestUser();
 
@@ -178,12 +240,18 @@ public class TransactionTest extends BaseTest {
                 transactionPage.getSelectedAccountBalance();
 
         System.out.println(
-                "Account balance: " + balance
+                "Account balance: " +
+                        balance
+        );
+
+        Assert.assertNotNull(
+                balance,
+                "Account balance was not displayed"
         );
 
         Assert.assertTrue(
                 balance.contains("R"),
-                "Account balance was not displayed"
+                "Account balance should contain R"
         );
     }
 }

@@ -16,17 +16,25 @@ public class BeneficiaryPage {
     private final WebDriver driver;
     private final WebDriverWait wait;
 
-    private final By pageHeading =
+    // ==============================
+    // Page Locators
+    // ==============================
+
+    private final By beneficiariesHeading =
             By.xpath("//h1[normalize-space()='Beneficiaries']");
 
     private final By beneficiaryNavigation =
             By.xpath("//*[normalize-space()='Beneficiaries']");
 
     private final By accountSelect =
-            By.cssSelector("[data-testid='beneficiary-account']");
+            By.cssSelector(
+                    "[data-testid='beneficiary-account']"
+            );
 
     private final By beneficiaryName =
-            By.cssSelector("[data-testid='beneficiary-name']");
+            By.cssSelector(
+                    "[data-testid='beneficiary-name']"
+            );
 
     private final By beneficiaryAccountNumber =
             By.cssSelector(
@@ -34,7 +42,9 @@ public class BeneficiaryPage {
             );
 
     private final By beneficiaryBank =
-            By.cssSelector("[data-testid='beneficiary-bank']");
+            By.cssSelector(
+                    "[data-testid='beneficiary-bank']"
+            );
 
     private final By addBeneficiaryButton =
             By.cssSelector(
@@ -42,10 +52,28 @@ public class BeneficiaryPage {
             );
 
     private final By beneficiaryItems =
-            By.cssSelector(".beneficiary-item");
+            By.cssSelector(
+                    ".beneficiary-item"
+            );
 
     private final By deleteButtons =
-            By.cssSelector(".delete-beneficiary-button");
+            By.cssSelector(
+                    ".delete-beneficiary-button"
+            );
+
+    private final By beneficiarySuccess =
+            By.cssSelector(
+                    "[data-testid='beneficiary-success']"
+            );
+
+    private final By beneficiaryError =
+            By.cssSelector(
+                    "[data-testid='beneficiary-error']"
+            );
+
+    // ==============================
+    // Constructor
+    // ==============================
 
     public BeneficiaryPage(WebDriver driver) {
 
@@ -54,10 +82,16 @@ public class BeneficiaryPage {
         this.wait = new WebDriverWait(
                 driver,
                 Duration.ofSeconds(
-                        ConfigReader.getInt("explicit.wait")
+                        ConfigReader.getInt(
+                                "explicit.wait"
+                        )
                 )
         );
     }
+
+    // ==============================
+    // Navigation
+    // ==============================
 
     public void openBeneficiariesPage() {
 
@@ -69,7 +103,7 @@ public class BeneficiaryPage {
 
         wait.until(
                 ExpectedConditions.visibilityOfElementLocated(
-                        pageHeading
+                        beneficiariesHeading
                 )
         );
     }
@@ -78,10 +112,14 @@ public class BeneficiaryPage {
 
         return wait.until(
                 ExpectedConditions.visibilityOfElementLocated(
-                        pageHeading
+                        beneficiariesHeading
                 )
         ).isDisplayed();
     }
+
+    // ==============================
+    // Account Selection
+    // ==============================
 
     public void selectAccount(String accountId) {
 
@@ -95,7 +133,19 @@ public class BeneficiaryPage {
                 );
 
         select.selectByValue(accountId);
+
+        wait.until(
+                ExpectedConditions.attributeToBe(
+                        accountSelect,
+                        "value",
+                        accountId
+                )
+        );
     }
+
+    // ==============================
+    // Form Fields
+    // ==============================
 
     public void enterName(String name) {
 
@@ -107,6 +157,7 @@ public class BeneficiaryPage {
                 );
 
         field.clear();
+
         field.sendKeys(name);
     }
 
@@ -121,6 +172,7 @@ public class BeneficiaryPage {
                 );
 
         field.clear();
+
         field.sendKeys(accountNumber);
     }
 
@@ -134,8 +186,13 @@ public class BeneficiaryPage {
                 );
 
         field.clear();
+
         field.sendKeys(bankName);
     }
+
+    // ==============================
+    // Add Beneficiary
+    // ==============================
 
     public void clickAddBeneficiary() {
 
@@ -147,17 +204,81 @@ public class BeneficiaryPage {
     }
 
     public void addBeneficiary(
+            String accountId,
             String name,
             String accountNumber,
             String bankName) {
 
+        selectAccount(accountId);
+
         enterName(name);
-        enterAccountNumber(accountNumber);
-        enterBankName(bankName);
+
+        enterAccountNumber(
+                accountNumber
+        );
+
+        enterBankName(
+                bankName
+        );
+
         clickAddBeneficiary();
     }
 
+    // ==============================
+    // Success Message
+    // ==============================
+
+    public boolean isSuccessMessageDisplayed() {
+
+        return wait.until(
+                ExpectedConditions.visibilityOfElementLocated(
+                        beneficiarySuccess
+                )
+        ).isDisplayed();
+    }
+
+    public String getSuccessMessage() {
+
+        return wait.until(
+                ExpectedConditions.visibilityOfElementLocated(
+                        beneficiarySuccess
+                )
+        ).getText();
+    }
+
+    // ==============================
+    // Error Message
+    // ==============================
+
+    public boolean isErrorMessageDisplayed() {
+
+        return wait.until(
+                ExpectedConditions.visibilityOfElementLocated(
+                        beneficiaryError
+                )
+        ).isDisplayed();
+    }
+
+    public String getErrorMessage() {
+
+        return wait.until(
+                ExpectedConditions.visibilityOfElementLocated(
+                        beneficiaryError
+                )
+        ).getText();
+    }
+
+    // ==============================
+    // Beneficiary List
+    // ==============================
+
     public int getBeneficiaryCount() {
+
+        wait.until(
+                ExpectedConditions.visibilityOfElementLocated(
+                        beneficiaryItems
+                )
+        );
 
         return driver.findElements(
                 beneficiaryItems
@@ -206,6 +327,10 @@ public class BeneficiaryPage {
         ).isDisplayed();
     }
 
+    // ==============================
+    // Delete Beneficiary
+    // ==============================
+
     public boolean isDeleteButtonDisplayed() {
 
         return wait.until(
@@ -223,6 +348,59 @@ public class BeneficiaryPage {
                 )
         ).click();
     }
+
+    // ==============================
+    // Find Specific Beneficiary
+    // ==============================
+
+    public boolean isBeneficiaryWithNameDisplayed(
+            String name) {
+
+        By beneficiary =
+                By.xpath(
+                        "//div[contains(@class,'beneficiary-item')]" +
+                                "//h3[normalize-space()='" +
+                                name +
+                                "']"
+                );
+
+        try {
+
+            return wait.until(
+                    ExpectedConditions.visibilityOfElementLocated(
+                            beneficiary
+                    )
+            ).isDisplayed();
+
+        } catch (Exception e) {
+
+            return false;
+        }
+    }
+
+    public void deleteBeneficiaryByName(
+            String name) {
+
+        By deleteButton =
+                By.xpath(
+                        "//div[contains(@class,'beneficiary-item')]" +
+                                "[.//h3[normalize-space()='" +
+                                name +
+                                "']]" +
+                                "//button[contains(@class," +
+                                "'delete-beneficiary-button')]"
+                );
+
+        wait.until(
+                ExpectedConditions.elementToBeClickable(
+                        deleteButton
+                )
+        ).click();
+    }
+
+    // ==============================
+    // Page Text
+    // ==============================
 
     public String getPageText() {
 
